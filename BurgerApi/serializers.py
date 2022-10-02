@@ -38,3 +38,14 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = '__all__'
 
+    def create(self, validated_data):
+        ingredient_data = validated_data.pop('ingredients')
+        customer_data = validated_data.pop('customer')
+        ingredients = IngredientSerializer.create(IngredientSerializer(), validated_data=ingredient_data)
+        customer = CustomerSerializer.create(CustomerSerializer(), validated_data=customer_data)
+        order, created = Order.objects.update_or_create(ingredients=ingredients,
+                                                        customer=customer,
+                                                        price=validated_data.pop('price'),
+                                                        user=validated_data.pop('user')
+                                                        )
+        return order
